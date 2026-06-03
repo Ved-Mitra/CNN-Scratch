@@ -23,7 +23,7 @@ public:
 
   // Constructors & Destructor
   Tensor(std::vector<int> shape, Device device = Device::CPU);
-  ~Tensor(); // MUST write this to call delete[] or cudaFree()!
+  ~Tensor(); /*TODO : Write for CUDA also*/
 
   // Device Management
   std::shared_ptr<Tensor>
