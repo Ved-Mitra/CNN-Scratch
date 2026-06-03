@@ -115,7 +115,7 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
         {
             for(int k=0;k<c1;k++)
             {
-                out->data[i*c1 + j]+= this->data[i*c1 + k]*other->data[k*c2 + j];
+                out->data[i*c2 + j]+= this->data[i*c1 + k]*other->data[k*c2 + j];
             }
         }
     }
@@ -132,7 +132,7 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
             {
                 for(int k=0;k<cB;k++)
                 {
-                    self->grad[i*cA + j]+= out->grad[i*cC + k]*other->data[k*rB + j];
+                    self->grad[i*cA + j]+= out->grad[i*cC + k]*other->data[k*cB + j];
                 }
             }
         }
@@ -144,7 +144,7 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
             {
                 for(int k=0;k<rA;k++)
                 {
-                    other->grad[i*cB + j]+= self->data[i*rA + k]*out->grad[k*rC + j];
+                    other->grad[i*cB + j]+= self->data[k*cA + i]*out->grad[k*cC + j];
                 }
             }
         }
@@ -154,5 +154,28 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
 }
 
 void Tensor::backward(){
-    
+    set<shared_ptr<Tensor>> visited;
+    vector<shared_ptr<Tensor>> topo;
+    auto node=shared_from_this();
+    dfs(visited,topo,node);
+
+    // Seed the gradient of the loss tensor
+    this->grad[0] = 1.0;
+
+    // Execute backward ops in reverse topological order
+    for (auto it = topo.rbegin(); it != topo.rend(); ++it) {
+        if ((*it)->backward_op) {
+            (*it)->backward_op();
+        }
+    }
+}
+
+void Tensor::dfs(set<shared_ptr<Tensor>> &visited, vector<shared_ptr<Tensor>> &topo,shared_ptr<Tensor> &node){
+    visited.insert(node);
+    for(auto const &child : node->children){
+        if(visited.find(child) == visited.end()){
+            dfs(visited, topo, const_cast<shared_ptr<Tensor>&>(child));
+        }
+    }
+    topo.push_back(node);
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <set>
 
 // Track where the tensor lives
 enum class Device { CPU, CUDA };
@@ -26,8 +27,7 @@ public:
   ~Tensor(); /*TODO : Write for CUDA also*/
 
   // Device Management
-  std::shared_ptr<Tensor>
-  to(Device target_device); // Moves data between CPU/GPU
+  std::shared_ptr<Tensor> to(Device target_device); // Moves data between CPU/GPU
 
   // Forward Math Operations
   std::shared_ptr<Tensor> add(std::shared_ptr<Tensor> other);
@@ -37,4 +37,7 @@ public:
   // Autograd
   void backward();
   void zero_grad();
+
+private:
+  void dfs(std::set<shared_ptr<Tensor>> &visited, std::vector<shared_ptr<Tensor>> &topo,shared_ptr<Tensor> &node);
 };
