@@ -179,3 +179,22 @@ void Tensor::dfs(set<shared_ptr<Tensor>> &visited, vector<shared_ptr<Tensor>> &t
     }
     topo.push_back(node);
 }
+
+shared_ptr<Tensor> Tensor::relu(){
+    auto out=make_shared<Tensor>(this->shape,this->device);
+    for(int i=0;i<this->size;i++)
+    {
+        out->data[i]=max(0.0,this->data[i]);
+    }
+    
+    out->children.push_back(shared_from_this());
+    auto self = shared_from_this();
+    
+    out->backward_op = [self, out]() {
+        for(int i = 0; i < out->size; i++) {
+            self->grad[i] += (self->data[i] > 0) ? out->grad[i] : 0.0;
+        }
+    };
+    
+    return out;
+}

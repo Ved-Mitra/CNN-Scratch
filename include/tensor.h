@@ -38,6 +38,9 @@ public:
   void backward();
   void zero_grad();
 
+  //Activation function
+  std::shared_ptr<Tensor> relu();
+
 private:
   void dfs(std::set<shared_ptr<Tensor>> &visited, std::vector<shared_ptr<Tensor>> &topo,shared_ptr<Tensor> &node);
 };
