@@ -1,6 +1,4 @@
 #include "tensor.h"
-#include "layer.h"
-#include "loss.h"
 
 class SGD { //Stochastic Gradient Descent
 public:
