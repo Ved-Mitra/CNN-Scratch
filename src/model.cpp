@@ -1,6 +1,6 @@
 #include "model.h"
 
-SimpleModel :: SimpleModel (double learning_rate=0.1,int epoch=10) {
+SimpleModel :: SimpleModel (double learning_rate, int epoch) {
     this->learning_rate=learning_rate;
     this->epoch=epoch;
 }
@@ -18,28 +18,25 @@ std::shared_ptr<Tensor> SimpleModel::forward (std::shared_ptr<Tensor> input){
     return out;
 }
 
-void SimpleModel::train(std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target) {
+double SimpleModel::train(std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target) {
     //optimizer
     std::vector<std::shared_ptr<Tensor>> params=get_parameters();
     SGD optimizer(params,this->learning_rate);
     Loss loss_func;
+    
+    //forward
+    std::shared_ptr<Tensor> pred = forward(input);
+    
+    //loss
+    std::shared_ptr<Tensor> loss = loss_func.MSE(pred, target);
+    
+    optimizer.zero_grad();
+    loss->backward();
 
-    for(int i=0;i<epoch;i++) {
-        //forward
-        std::shared_ptr<Tensor> pred = forward(input);
-        
-        //loss
-        std::shared_ptr<Tensor> loss = loss_func.MSE(pred, target);
-        
-        optimizer.zero_grad();
-        loss->backward();
+    //optimizer
+    optimizer.step();
 
-        //optimizer
-        optimizer.step();
-
-        //result
-        std::cout << "Epoch " << i+1 << " : " << loss->data[0] << std::endl;
-    }
+    return loss->data[0];
 }
 
 std::vector<std::shared_ptr<Tensor>>  SimpleModel::get_parameters() {

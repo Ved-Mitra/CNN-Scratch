@@ -11,7 +11,7 @@ public:
     //layer
     void linearlayer(int in_features,int out_features);
     //train
-    void train (std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target);
+    double train (std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target);
 
 private:
     int epoch;
