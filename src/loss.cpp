@@ -22,4 +22,6 @@ std::shared_ptr<Tensor> Loss::MSE(std::shared_ptr<Tensor> pred,std::shared_ptr<T
             pred->grad[i] += local_deriv*out->grad[0];
         }
     };
+    out->children.push_back(pred);
+    return out;
 }
