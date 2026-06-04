@@ -42,5 +42,5 @@ public:
   std::shared_ptr<Tensor> relu();
 
 private:
-  void dfs(std::set<shared_ptr<Tensor>> &visited, std::vector<shared_ptr<Tensor>> &topo,shared_ptr<Tensor> &node);
+  void dfs(std::set<std::shared_ptr<Tensor>> &visited, std::vector<std::shared_ptr<Tensor>> &topo,std::shared_ptr<Tensor> &node);
 };
