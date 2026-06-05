@@ -29,5 +29,11 @@ public:
 
 class Conv2DLayer : public Layer {
 public:
-
+    Conv2DLayer(int in_channels, int out_channels,int kernel_size,int stride=1, int padding=0);
+    std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> input) override;
+private:
+    int stride;
+    int padding;
+    int kernel_size;
+    void initialize(int in_channels, int out_channels,int kernel_size,int stride, int padding);
 };

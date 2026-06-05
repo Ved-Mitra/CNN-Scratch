@@ -17,12 +17,17 @@ int main() {
 
         // 2. Define Model Architecture for MNIST
         // Input: 784 (28x28 flattened)
-        // Design for MNIST with spatial support
-        SimpleModel model(0.001, 10); 
-        model.flatten(); // Convert {1, 28, 28} to {1, 784}
-        model.linearlayer(784, 128);
+        // 2. Define CNN Architecture for MNIST
+        // Input: 1x28x28
+        // Conv1: 1 -> 8 filters (3x3), stride=2, padding=1
+        // Output after Conv1: 8 x 14 x 14 (if calculated correctly)
+        // Flatten: 8 * 14 * 14 = 1568
+        // Hidden: 10
+        SimpleModel model(0.01, 10); 
+        model.conv2d(1, 8, 3, 2, 1);
         model.relu();
-        model.linearlayer(128, 10);
+        model.flatten();
+        model.linearlayer(1568, 10);
 
         // 3. Training
         // Since our current model.train() takes total Tensors, we need to handle 

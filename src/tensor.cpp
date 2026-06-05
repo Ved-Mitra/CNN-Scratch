@@ -227,3 +227,85 @@ shared_ptr<Tensor> Tensor::flatten() {
     };
     return out;
 }
+
+std::shared_ptr<Tensor> Tensor::convolution(std::shared_ptr<Tensor> other, int stride, int padding, int kernel_size) {
+    // Input shape: [in_channels, in_height, in_width]
+    // Filter shape: [out_channels, in_channels, k, k]
+    int in_channels = this->shape[0];
+    int in_height = this->shape[1];
+    int in_width = this->shape[2];
+    
+    int out_channels = other->shape[0];
+    int out_height = ((in_height + 2 * padding - kernel_size) / stride) + 1;
+    int out_width = ((in_width + 2 * padding - kernel_size) / stride) + 1;
+
+    auto out = std::make_shared<Tensor>(std::vector<int>{out_channels, out_height, out_width}, this->device);
+
+    // Forward Pass
+    for (int oc = 0; oc < out_channels; oc++) {
+        for (int oh = 0; oh < out_height; oh++) {
+            for (int ow = 0; ow < out_width; ow++) {
+                double sum = 0.0;
+                for (int ic = 0; ic < in_channels; ic++) {
+                    for (int kh = 0; kh < kernel_size; kh++) {
+                        for (int kw = 0; kw < kernel_size; kw++) {
+                            int ih = oh * stride + kh - padding;
+                            int iw = ow * stride + kw - padding;
+
+                            if (ih >= 0 && ih < in_height && iw >= 0 && iw < in_width) {
+                                int input_idx = this->get_index({ic, ih, iw});
+                                int kernel_idx = other->get_index({oc, ic, kh, kw});
+                                sum += this->data[input_idx] * other->data[kernel_idx];
+                            }
+                        }
+                    }
+                }
+                out->data[out->get_index({oc, oh, ow})] = sum;
+            }
+        }
+    }
+
+    out->children.push_back(shared_from_this());
+    out->children.push_back(other);
+    
+    auto self = shared_from_this();
+    out->backward_op = [self, out, other, stride, padding, kernel_size]() {
+        int in_channels = self->shape[0];
+        int in_height = self->shape[1];
+        int in_width = self->shape[2];
+        
+        int out_channels = out->shape[0];
+        int out_height = out->shape[1];
+        int out_width = out->shape[2];
+
+        for (int oc = 0; oc < out_channels; oc++) {
+            for (int oh = 0; oh < out_height; oh++) {
+                for (int ow = 0; ow < out_width; ow++) {
+                    int out_idx = out->get_index({oc, oh, ow});
+                    double grad_val = out->grad[out_idx];
+
+                    for (int ic = 0; ic < in_channels; ic++) {
+                        for (int kh = 0; kh < kernel_size; kh++) {
+                            for (int kw = 0; kw < kernel_size; kw++) {
+                                int ih = oh * stride + kh - padding;
+                                int iw = ow * stride + kw - padding;
+
+                                if (ih >= 0 && ih < in_height && iw >= 0 && iw < in_width) {
+                                    int input_idx = self->get_index({ic, ih, iw});
+                                    int kernel_idx = other->get_index({oc, ic, kh, kw});
+
+                                    // Gradient wrt weights
+                                    other->grad[kernel_idx] += grad_val * self->data[input_idx];
+                                    
+                                    // Gradient wrt input
+                                    self->grad[input_idx] += grad_val * other->data[kernel_idx];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return out;
+}

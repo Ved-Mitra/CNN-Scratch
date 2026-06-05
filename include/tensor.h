@@ -33,6 +33,7 @@ public:
   std::shared_ptr<Tensor> add(std::shared_ptr<Tensor> other);
   std::shared_ptr<Tensor> mul(std::shared_ptr<Tensor> other);
   std::shared_ptr<Tensor> matmul(std::shared_ptr<Tensor> other);
+  std::shared_ptr<Tensor> convolution(std::shared_ptr<Tensor> other,int stride,int padding,int kernel_size);
 
   // Autograd
   void backward();

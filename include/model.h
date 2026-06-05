@@ -10,6 +10,7 @@ public:
     std::vector<std::shared_ptr<Tensor>> get_parameters();
     //layer
     void linearlayer(int in_features,int out_features);
+    void conv2d(int in_channels, int out_channels, int kernel_size, int stride=1, int padding=0);
     void relu();
     void flatten();
     //train

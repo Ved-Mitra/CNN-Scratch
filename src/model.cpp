@@ -10,6 +10,11 @@ void SimpleModel::linearlayer(int in_features,int out_features){
     layers.push_back(layer);
 }
 
+void SimpleModel::conv2d(int in_channels, int out_channels, int kernel_size, int stride, int padding) {
+    auto layer = std::make_shared<Conv2DLayer>(in_channels, out_channels, kernel_size, stride, padding);
+    layers.push_back(layer);
+}
+
 void SimpleModel::relu(){
     auto layer = std::make_shared<ReLULayer>();
     layers.push_back(layer);
