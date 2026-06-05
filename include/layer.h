@@ -26,3 +26,8 @@ class FlattenLayer : public Layer {
 public:
     std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> input) override;
 };
+
+class Conv2DLayer : public Layer {
+public:
+
+};
