@@ -10,6 +10,7 @@ public:
     std::vector<std::shared_ptr<Tensor>> get_parameters();
     //layer
     void linearlayer(int in_features,int out_features);
+    void relu();
     //train
     double train (std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target);
 

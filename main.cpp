@@ -21,6 +21,7 @@ int main() {
         // Output: 10 (Digits 0-9)
         SimpleModel model(0.001, 10); // Learning Rate=0.001, Epochs=10
         model.linearlayer(784, 128);
+        model.relu();
         model.linearlayer(128, 10);
 
         // 3. Training

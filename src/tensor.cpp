@@ -20,6 +20,7 @@ Tensor::Tensor(vector<int> shape, Device device){
         this->grad= new double[this->size]();
     }
     else{
+        // TODO
         cout << "CUDA to be implemented" << '\n';
     }
 };

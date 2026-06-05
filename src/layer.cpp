@@ -30,3 +30,7 @@ std::shared_ptr<Tensor> LinearLayer::forward(std::shared_ptr<Tensor> input) {
     // Y = X * W + B
     return input->matmul(params[0])->add(params[1]);
 }
+
+std::shared_ptr<Tensor> ReLULayer::forward(std::shared_ptr<Tensor> input) {
+    return input->relu();
+}

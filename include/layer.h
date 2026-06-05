@@ -16,3 +16,8 @@ public:
 private:
     void initialize(int in_features, int out_features);
 };
+
+class ReLULayer : public Layer {
+public:
+    std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> input) override;
+};

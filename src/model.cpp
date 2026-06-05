@@ -10,6 +10,11 @@ void SimpleModel::linearlayer(int in_features,int out_features){
     layers.push_back(layer);
 }
 
+void SimpleModel::relu(){
+    auto layer = std::make_shared<ReLULayer>();
+    layers.push_back(layer);
+}
+
 std::shared_ptr<Tensor> SimpleModel::forward (std::shared_ptr<Tensor> input){
     auto out = input;
     for(auto layer:layers){
