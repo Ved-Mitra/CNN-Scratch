@@ -337,3 +337,60 @@ std::shared_ptr<Tensor> Tensor::convolution(std::shared_ptr<Tensor> other, int s
     };
     return out;
 }
+
+std::shared_ptr<Tensor> Tensor::maxpool2D(int pool_size, int stride, int padding) {
+    int dim = this->shape.size();
+    if (dim < 3) {
+        throw std::invalid_argument("Input must have at least 3 dimensions [C, H, W] for maxpool2D");
+    }
+
+    int in_channels = this->shape[0];
+    int in_height = this->shape[1];
+    int in_width = this->shape[2];
+
+    int out_height = ((in_height + 2 * padding - pool_size) / stride) + 1;
+    int out_width = ((in_width + 2 * padding - pool_size) / stride) + 1;
+    int out_channels = in_channels;
+
+    auto out = make_shared<Tensor>(std::vector<int>{out_channels, out_height, out_width}, this->device);
+    std::vector<int> maxIdxs(out->size);
+
+    for (int c = 0; c < out_channels; c++) {
+        for (int oh = 0; oh < out_height; oh++) {
+            for (int ow = 0; ow < out_width; ow++) {
+                double maxx = -1e18;
+                int maxIndex = -1;
+
+                for (int ph = 0; ph < pool_size; ph++) {
+                    for (int pw = 0; pw < pool_size; pw++) {
+                        int ih = oh * stride + ph - padding;
+                        int iw = ow * stride + pw - padding;
+
+                        if (ih >= 0 && ih < in_height && iw >= 0 && iw < in_width) {
+                            int idx = this->get_index({c, ih, iw});
+                            if (this->data[idx] > maxx) {
+                                maxx = this->data[idx];
+                                maxIndex = idx;
+                            }
+                        }
+                    }
+                }
+                int out_idx = out->get_index({c, oh, ow});
+                out->data[out_idx] = maxx;
+                maxIdxs[out_idx] = maxIndex;
+            }
+        }
+    }
+
+    out->children.push_back(shared_from_this());
+    auto self = shared_from_this();
+    out->backward_op = [self, out, maxIdxs]() {
+        for (int i = 0; i < out->size; i++) {
+            if (maxIdxs[i] != -1) {
+                self->grad[maxIdxs[i]] += out->grad[i];
+            }
+        }
+    };
+
+    return out;
+}

@@ -43,7 +43,7 @@ Conv2DLayer::Conv2DLayer (int in_channels, int out_channels,int kernel_size,int 
     initialize(in_channels, out_channels,kernel_size,stride, padding);
 }
 
-void Conv2DLayer::initialize(int in_channels, int out_channels,int kernel_size,int stride, int padding){
+void Conv2DLayer::initialize(int in_channels, int out_channels,int kernel_size,int stride=1, int padding=0){
     this->stride=stride;
     this->padding=padding;
     this->kernel_size=kernel_size;
@@ -69,4 +69,18 @@ void Conv2DLayer::initialize(int in_channels, int out_channels,int kernel_size,i
 
 std::shared_ptr<Tensor> Conv2DLayer::forward(std::shared_ptr<Tensor> input) {
     return input->convolution(params[0],this->stride,this->padding,this->kernel_size)->add(params[1]);
+}
+
+Max2DPoolLayer::Max2DPoolLayer(int pool_size, int stride, int padding) {
+    initialize(pool_size, stride, padding);
+}
+
+void Max2DPoolLayer::initialize(int pool_size,int stride,int padding) {
+    this->pool_size=pool_size;
+    this->stride=stride;
+    this->padding=padding;
+}
+
+std::shared_ptr<Tensor> Max2DPoolLayer::forward(std::shared_ptr<Tensor> input) {
+    return input->maxpool2D(pool_size,stride,padding);
 }

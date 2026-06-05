@@ -13,6 +13,7 @@ public:
     void conv2d(int in_channels, int out_channels, int kernel_size, int stride=1, int padding=0);
     void relu();
     void flatten();
+    void maxpool2d(int pool_size,int stride=1,int padding=0);
     //train
     double train (std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target);
 

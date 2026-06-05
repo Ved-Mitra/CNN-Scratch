@@ -37,3 +37,14 @@ private:
     int kernel_size;
     void initialize(int in_channels, int out_channels,int kernel_size,int stride, int padding);
 };
+
+class Max2DPoolLayer : public Layer {
+public:
+    Max2DPoolLayer(int pool_size,int stride=1,int padding=0);
+    std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> input) override;
+private:
+    int stride;
+    int padding;
+    int pool_size;
+    void initialize(int pool_size,int stride,int padding);
+};

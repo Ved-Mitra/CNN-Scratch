@@ -34,6 +34,7 @@ public:
   std::shared_ptr<Tensor> mul(std::shared_ptr<Tensor> other);
   std::shared_ptr<Tensor> matmul(std::shared_ptr<Tensor> other);
   std::shared_ptr<Tensor> convolution(std::shared_ptr<Tensor> other,int stride,int padding,int kernel_size);
+  std::shared_ptr<Tensor> maxpool2D (int pool_size,int stride,int padding);
 
   // Autograd
   void backward();

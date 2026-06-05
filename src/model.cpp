@@ -25,6 +25,11 @@ void SimpleModel::flatten(){
     layers.push_back(layer);
 }
 
+void SimpleModel::maxpool2d(int pool_size, int stride, int padding) {
+    auto layer= std::make_shared<Max2DPoolLayer>(pool_size,stride,padding);
+    layers.push_back(layer);
+}
+
 std::shared_ptr<Tensor> SimpleModel::forward (std::shared_ptr<Tensor> input){
     auto out = input;
     for(auto layer:layers){

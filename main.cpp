@@ -20,14 +20,16 @@ int main() {
         // 2. Define CNN Architecture for MNIST
         // Input: 1x28x28
         // Conv1: 1 -> 8 filters (3x3), stride=2, padding=1
-        // Output after Conv1: 8 x 14 x 14 (if calculated correctly)
-        // Flatten: 8 * 14 * 14 = 1568
-        // Hidden: 10
+        // Output after Conv1: 8 x 14 x 14
+        // MaxPool: 2x2, stride=2 -> 8 x 7 x 7
+        // Flatten: 8 * 7 * 7 = 392
+        // Output: 10
         SimpleModel model(0.01, 10); 
         model.conv2d(1, 8, 3, 2, 1);
         model.relu();
+        model.maxpool2d(2, 2, 0);
         model.flatten();
-        model.linearlayer(1568, 10);
+        model.linearlayer(392, 10);
 
         // 3. Training
         // Since our current model.train() takes total Tensors, we need to handle 
