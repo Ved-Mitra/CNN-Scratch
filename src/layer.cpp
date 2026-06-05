@@ -68,38 +68,5 @@ void Conv2DLayer::initialize(int in_channels, int out_channels,int kernel_size,i
 }
 
 std::shared_ptr<Tensor> Conv2DLayer::forward(std::shared_ptr<Tensor> input) {
-    auto conv_out = input->convolution(params[0], this->stride, this->padding, this->kernel_size);
-    
-    // Bias addition with broadcasting [out_channels, H, W] + [1, out_channels]
-    auto out = std::make_shared<Tensor>(conv_out->shape, conv_out->device);
-    auto bias = params[1];
-    
-    int out_channels = conv_out->shape[0];
-    int out_height = conv_out->shape[1];
-    int out_width = conv_out->shape[2];
-    int spatial_size = out_height * out_width;
-
-    for (int oc = 0; oc < out_channels; oc++) {
-        for (int i = 0; i < spatial_size; i++) {
-            int idx = oc * spatial_size + i;
-            out->data[idx] = conv_out->data[idx] + bias->data[oc];
-        }
-    }
-
-    // Autograd for bias addition
-    out->children.push_back(conv_out);
-    out->children.push_back(bias);
-    
-    out->backward_op = [conv_out, bias, out_channels, spatial_size, out]() {
-        for (int oc = 0; oc < out_channels; oc++) {
-            for (int i = 0; i < spatial_size; i++) {
-                int idx = oc * spatial_size + i;
-                double grad_val = out->grad[idx];
-                conv_out->grad[idx] += grad_val;
-                bias->grad[oc] += grad_val;
-            }
-        }
-    };
-
-    return out;
+    return input->convolution(params[0],this->stride,this->padding,this->kernel_size)->add(params[1]);
 }

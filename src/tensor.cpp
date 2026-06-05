@@ -45,32 +45,60 @@ int Tensor::get_index(const std::vector<int>& coords) const {
 }
 
 shared_ptr<Tensor> Tensor::add(shared_ptr<Tensor> other){
-
-    if(other->size!=this->size)
-    {
-        throw std::invalid_argument("Tensors are not of the same size");
-    }
-
-    //calculating new tensor
-    auto out=make_shared<Tensor>(this->shape,this->device);
-    for(int i=0;i<this->size;i++)
-    {
-        out->data[i]=this->data[i] + other->data[i];
-    }
-
-    //setting for bacward analysis
-    out->children.push_back(shared_from_this());
-    out->children.push_back(other);
-
-    auto self=shared_from_this();
-    out->backward_op=[self,other,out](){
-        for(int i=0;i<out->size;i++){
-            self->grad[i]+= out->grad[i]; // out->grad[i]*1
-            other->grad[i]+= out->grad[i]; // out->grad[i]*1
+    if(this->shape==other->shape) {   
+        //standard addition
+        auto out=make_shared<Tensor>(this->shape,this->device);
+        for(int i=0;i<this->size;i++)
+        {
+            out->data[i]=this->data[i] + other->data[i];
         }
-    };
 
-    return out;
+        //setting for bacward analysis
+        out->children.push_back(shared_from_this());
+        out->children.push_back(other);
+
+        auto self=shared_from_this();
+        out->backward_op=[self,other,out](){
+            for(int i=0;i<out->size;i++){
+                self->grad[i]+= out->grad[i]; // out->grad[i]*1
+                other->grad[i]+= out->grad[i]; // out->grad[i]*1
+            }
+        };
+        return out;
+    }
+    
+    if(this->shape.size() == 3 && other->shape.size() == 2 && 
+    this->shape[0] == other->shape[1] && other->shape[0] == 1) {
+        //for convolution [O,H,W] + [1,O]
+        auto out = std::make_shared<Tensor> (this->shape,this->device);
+        int O=this->shape[0];
+        int H=this->shape[1];
+        int W=this->shape[2];
+        for(int i=0;i<O;i++) {
+            for(int j=0;j < H*W ;j++) {
+                int idx = i*O + j;
+                out->data[idx] = this->data[idx] + other->data[i];
+            }
+        }
+
+        out->children.push_back(shared_from_this());
+        out->children.push_back(other);
+
+        auto self=shared_from_this();
+        out->backward_op = [self,out,other,O,H,W] {
+            for(int i=0;i<O;i++) {
+                for(int j=0;j<H*W;j++) {
+                    int idx=i*O + j;
+                    self->grad[idx]+=out->grad[idx];
+                    other->grad[i]+=out->grad[idx];
+                }
+            }
+        };
+
+        return out;
+    }
+
+    throw std::invalid_argument("Invalid Dimensions");
 };
 
 void Tensor::zero_grad(){
