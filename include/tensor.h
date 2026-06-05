@@ -43,6 +43,7 @@ public:
 
   // Spatial Utilities
   int get_index(const std::vector<int>& coords) const;
+  std::shared_ptr<Tensor> flatten();
 
 private:
   void dfs(std::set<std::shared_ptr<Tensor>> &visited, std::vector<std::shared_ptr<Tensor>> &topo,std::shared_ptr<Tensor> &node);

@@ -209,3 +209,20 @@ shared_ptr<Tensor> Tensor::relu(){
     
     return out;
 }
+
+shared_ptr<Tensor> Tensor::flatten() {
+    auto out = std::make_shared<Tensor>(std::vector<int>{1, input->size}, input->device);
+    // Copy data
+    for(int i=0; i<input->size; i++) {
+        out->data[i] = input->data[i];
+    }
+    
+    // Autograd setup (Identity mapping)
+    out->children.push_back(input);
+    out->backward_op = [input, out]() {
+        for(int i=0; i<input->size; i++) {
+            input->grad[i] += out->grad[i];
+        }
+    };
+    return out;
+}
