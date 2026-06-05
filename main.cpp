@@ -17,9 +17,9 @@ int main() {
 
         // 2. Define Model Architecture for MNIST
         // Input: 784 (28x28 flattened)
-        // Hidden: 128
-        // Output: 10 (Digits 0-9)
-        SimpleModel model(0.001, 10); // Learning Rate=0.001, Epochs=10
+        // Design for MNIST with spatial support
+        SimpleModel model(0.001, 10); 
+        model.flatten(); // Convert {1, 28, 28} to {1, 784}
         model.linearlayer(784, 128);
         model.relu();
         model.linearlayer(128, 10);

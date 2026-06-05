@@ -9,7 +9,7 @@ include_directories(include)
 add_executable(cnn_scratch 
     main.cpp 
     src/tensor.cpp 
-    src/linearLayer.cpp 
+    src/layer.cpp 
     src/loss.cpp 
     src/optimizer.cpp 
     src/model.cpp

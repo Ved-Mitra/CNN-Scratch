@@ -21,3 +21,8 @@ class ReLULayer : public Layer {
 public:
     std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> input) override;
 };
+
+class FlattenLayer : public Layer {
+public:
+    std::shared_ptr<Tensor> forward(std::shared_ptr<Tensor> input) override;
+};

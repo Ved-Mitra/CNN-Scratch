@@ -15,6 +15,11 @@ void SimpleModel::relu(){
     layers.push_back(layer);
 }
 
+void SimpleModel::flatten(){
+    auto layer = std::make_shared<FlattenLayer>();
+    layers.push_back(layer);
+}
+
 std::shared_ptr<Tensor> SimpleModel::forward (std::shared_ptr<Tensor> input){
     auto out = input;
     for(auto layer:layers){

@@ -34,3 +34,20 @@ std::shared_ptr<Tensor> LinearLayer::forward(std::shared_ptr<Tensor> input) {
 std::shared_ptr<Tensor> ReLULayer::forward(std::shared_ptr<Tensor> input) {
     return input->relu();
 }
+
+std::shared_ptr<Tensor> FlattenLayer::forward(std::shared_ptr<Tensor> input) {
+    auto out = std::make_shared<Tensor>(std::vector<int>{1, input->size}, input->device);
+    // Copy data
+    for(int i=0; i<input->size; i++) {
+        out->data[i] = input->data[i];
+    }
+    
+    // Autograd setup (Identity mapping)
+    out->children.push_back(input);
+    out->backward_op = [input, out]() {
+        for(int i=0; i<input->size; i++) {
+            input->grad[i] += out->grad[i];
+        }
+    };
+    return out;
+}

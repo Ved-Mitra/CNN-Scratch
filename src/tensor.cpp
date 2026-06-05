@@ -34,6 +34,16 @@ Tensor::~Tensor(){
     }
 };
 
+int Tensor::get_index(const std::vector<int>& coords) const {
+    int index = 0;
+    int multiplier = 1;
+    for (int i = shape.size() - 1; i >= 0; i--) {
+        index += coords[i] * multiplier;
+        multiplier *= shape[i];
+    }
+    return index;
+}
+
 shared_ptr<Tensor> Tensor::add(shared_ptr<Tensor> other){
 
     if(other->size!=this->size)

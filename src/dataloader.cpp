@@ -33,7 +33,7 @@ std::vector<std::shared_ptr<Tensor>> DataLoader::load_mnist_images(std::string p
     
     // We'll just load the first 1000 for a demonstration
     for (int i = 0; i < 1000; i++) {
-        auto t = std::make_shared<Tensor>(std::vector<int>{1, pixel_count});
+        auto t = std::make_shared<Tensor>(std::vector<int>{1, rows, cols});
         for (int p = 0; p < pixel_count; p++) {
             unsigned char temp = 0;
             file.read((char*)&temp, 1);
