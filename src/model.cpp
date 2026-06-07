@@ -59,6 +59,37 @@ double SimpleModel::train(std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> 
     return loss->data[0];
 }
 
+void SimpleModel::fit(std::vector<std::shared_ptr<Tensor>> input,std::vector<std::shared_ptr<Tensor>> target, int epoch=10, int num_samples=100){
+    if(input.size()<num_samples){
+        num_samples=input.size();
+    }
+
+    for(int e=1;e<epoch;e++){
+        double total_epoch_loss=0.0;
+        for(int i=0;i<num_samples;i++){
+            total_epoch_loss+=train(input[i],target[i]);
+        }
+        std::cout << "Epoch " << e + 1 << " - Average Loss: " << (total_epoch_loss / num_samples) << std::endl;
+    }
+}
+
+std::vector<std::shared_ptr<Tensor>> SimpleModel::test(std::vector<std::shared_ptr<Tensor>> input){
+    std::vector<std::shared_ptr<Tensor>> out;
+    for(int i=0;i<input.size();i++){
+        out.push_back(forward(input[i]));
+    }
+    return out;
+}
+
+double SimpleModel::accuracy_score(std::vector<std::shared_ptr<Tensor>> pred,std::vector<std::shared_ptr<Tensor>> labels){
+    double accuracy=0.0;
+    for(int i=0;i<pred.size();i++){
+        
+    }
+    accuracy/=pred.size();
+    return accuracy;
+}
+
 std::vector<std::shared_ptr<Tensor>>  SimpleModel::get_parameters() {
     std::vector<std::shared_ptr<Tensor>> params;
     for(auto layer : layers) {
