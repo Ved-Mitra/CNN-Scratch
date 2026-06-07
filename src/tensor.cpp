@@ -1,8 +1,6 @@
 #include "tensor.h"
 
-using namespace std;
-
-Tensor::Tensor(vector<int> shape, Device device){
+Tensor::Tensor(std::vector<int> shape, Device device){
 
     //assigning class variables
     this->shape=shape;
@@ -21,7 +19,7 @@ Tensor::Tensor(vector<int> shape, Device device){
     }
     else{
         // TODO
-        cout << "CUDA to be implemented" << '\n';
+        std::cout << "CUDA to be implemented" << '\n';
     }
 };
 
@@ -44,10 +42,10 @@ int Tensor::get_index(const std::vector<int>& coords) const {
     return index;
 }
 
-shared_ptr<Tensor> Tensor::add(shared_ptr<Tensor> other){
+std::shared_ptr<Tensor> Tensor::add(std::shared_ptr<Tensor> other){
     if(this->shape==other->shape) {   
         //standard addition
-        auto out=make_shared<Tensor>(this->shape,this->device);
+        auto out=std::make_shared<Tensor>(this->shape,this->device);
         for(int i=0;i<this->size;i++)
         {
             out->data[i]=this->data[i] + other->data[i];
@@ -76,7 +74,7 @@ shared_ptr<Tensor> Tensor::add(shared_ptr<Tensor> other){
         int W=this->shape[2];
         for(int i=0;i<O;i++) {
             for(int j=0;j < H*W ;j++) {
-                int idx = i*O + j;
+                int idx = i*(H*W) + j;
                 out->data[idx] = this->data[idx] + other->data[i];
             }
         }
@@ -88,7 +86,7 @@ shared_ptr<Tensor> Tensor::add(shared_ptr<Tensor> other){
         out->backward_op = [self,out,other,O,H,W] {
             for(int i=0;i<O;i++) {
                 for(int j=0;j<H*W;j++) {
-                    int idx=i*O + j;
+                    int idx=i*(H*W) + j;
                     self->grad[idx]+=out->grad[idx];
                     other->grad[i]+=out->grad[idx];
                 }
@@ -106,7 +104,7 @@ void Tensor::zero_grad(){
         this->grad[i]=0.0;
 };
 
-shared_ptr<Tensor> Tensor::mul(shared_ptr<Tensor> other){
+std::shared_ptr<Tensor> Tensor::mul(std::shared_ptr<Tensor> other){
 
     if(other->size!=this->size)
     {
@@ -114,7 +112,7 @@ shared_ptr<Tensor> Tensor::mul(shared_ptr<Tensor> other){
     }
 
     //calculating new tensor
-    auto out=make_shared<Tensor>(this->shape,this->device);
+    auto out=std::make_shared<Tensor>(this->shape,this->device);
     for(int i=0;i<this->size;i++)
     {
         out->data[i]=this->data[i]*other->data[i];
@@ -135,7 +133,7 @@ shared_ptr<Tensor> Tensor::mul(shared_ptr<Tensor> other){
     return out;
 };
 
-shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
+std::shared_ptr<Tensor> Tensor::matmul(std::shared_ptr<Tensor> other){
     if (this->shape.size() != 2 || other->shape.size() != 2) {
         throw std::invalid_argument("Matmul only supports 2D tensors for now.");
     }
@@ -145,8 +143,8 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
 
     /*TODO --> optimize matrix multiplication using strassen/cache-optimized algorithm */
     int r1=this->shape[0],c1=this->shape[1],r2=other->shape[0],c2=other->shape[1];
-    vector<int> newShape={r1,c2};
-    auto out=make_shared<Tensor>(newShape,this->device);
+    std::vector<int> newShape={r1,c2};
+    auto out=std::make_shared<Tensor>(newShape,this->device);
     
     for(int i=0;i<r1;i++)
     {
@@ -164,27 +162,27 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
         int rA=self->shape[0],cA=self->shape[1],rB=other->shape[0],cB=other->shape[1];
         int rC=rA,cC=cB;
 
-        //self-grad
-        for(int i=0;i<rA;i++)
-        {
-            for(int j=0;j<cA;j++)
-            {
-                for(int k=0;k<cB;k++)
-                {
-                    self->grad[i*cA + j]+= out->grad[i*cC + k]*other->data[k*cB + j];
+        // self-grad (dL/dA = dL/dC * B^T)
+        // dA[i,j] = sum_k (dC[i,k] * B[j,k])
+        for(int i=0; i<rA; i++) {
+            for(int j=0; j<cA; j++) {
+                double g = 0.0;
+                for(int k=0; k<cB; k++) {
+                    g += out->grad[i*cC + k] * other->data[j*cB + k];
                 }
+                self->grad[i*cA + j] += g;
             }
         }
 
-        //other-grad
-        for(int i=0;i<rB;i++)
-        {
-            for(int j=0;j<cB;j++)
-            {
-                for(int k=0;k<rA;k++)
-                {
-                    other->grad[i*cB + j]+= self->data[k*cA + i]*out->grad[k*cC + j];
+        // other-grad (dL/dB = A^T * dL/dC)
+        // dB[i,j] = sum_k (A[k,i] * dC[k,j])
+        for(int i=0; i<rB; i++) {
+            for(int j=0; j<cB; j++) {
+                double g = 0.0;
+                for(int k=0; k<rA; k++) {
+                    g += self->data[k*cA + i] * out->grad[k*cC + j];
                 }
+                other->grad[i*cB + j] += g;
             }
         }
     };
@@ -193,8 +191,8 @@ shared_ptr<Tensor> Tensor::matmul(shared_ptr<Tensor> other){
 }
 
 void Tensor::backward(){
-    set<shared_ptr<Tensor>> visited;
-    vector<shared_ptr<Tensor>> topo;
+    std::set<std::shared_ptr<Tensor>> visited;
+    std::vector<std::shared_ptr<Tensor>> topo;
     auto node=shared_from_this();
     dfs(visited,topo,node);
 
@@ -209,21 +207,21 @@ void Tensor::backward(){
     }
 }
 
-void Tensor::dfs(set<shared_ptr<Tensor>> &visited, vector<shared_ptr<Tensor>> &topo,shared_ptr<Tensor> &node){
+void Tensor::dfs(std::set<std::shared_ptr<Tensor>> &visited, std::vector<std::shared_ptr<Tensor>> &topo,std::shared_ptr<Tensor> &node){
     visited.insert(node);
     for(auto const &child : node->children){
         if(visited.find(child) == visited.end()){
-            dfs(visited, topo, const_cast<shared_ptr<Tensor>&>(child));
+            dfs(visited, topo, const_cast<std::shared_ptr<Tensor>&>(child));
         }
     }
     topo.push_back(node);
 }
 
-shared_ptr<Tensor> Tensor::relu(){
-    auto out=make_shared<Tensor>(this->shape,this->device);
+std::shared_ptr<Tensor> Tensor::relu(){
+    auto out=std::make_shared<Tensor>(this->shape,this->device);
     for(int i=0;i<this->size;i++)
     {
-        out->data[i]=max(0.0,this->data[i]);
+        out->data[i]=std::max(0.0,this->data[i]);
     }
     
     out->children.push_back(shared_from_this());
@@ -238,7 +236,7 @@ shared_ptr<Tensor> Tensor::relu(){
     return out;
 }
 
-shared_ptr<Tensor> Tensor::flatten() {
+std::shared_ptr<Tensor> Tensor::flatten() {
     auto out = std::make_shared<Tensor>(std::vector<int>{1, this->size}, this->device);
     // Copy data
     for(int i=0; i<this->size; i++) {
@@ -352,7 +350,7 @@ std::shared_ptr<Tensor> Tensor::maxpool2D(int pool_size, int stride, int padding
     int out_width = ((in_width + 2 * padding - pool_size) / stride) + 1;
     int out_channels = in_channels;
 
-    auto out = make_shared<Tensor>(std::vector<int>{out_channels, out_height, out_width}, this->device);
+    auto out = std::make_shared<Tensor>(std::vector<int>{out_channels, out_height, out_width}, this->device);
     std::vector<int> maxIdxs(out->size);
 
     for (int c = 0; c < out_channels; c++) {
@@ -389,6 +387,59 @@ std::shared_ptr<Tensor> Tensor::maxpool2D(int pool_size, int stride, int padding
             if (maxIdxs[i] != -1) {
                 self->grad[maxIdxs[i]] += out->grad[i];
             }
+        }
+    };
+
+    return out;
+}
+
+std::shared_ptr<Tensor> Tensor::softmax() {
+    double maxx = -1e18;
+    for (int i = 0; i < this->size; i++)
+        maxx = std::max(maxx, this->data[i]);
+
+    auto out = std::make_shared<Tensor>(this->shape, this->device);
+    double classes_exp_sum = 0.0;
+    for (int i = 0; i < this->size; i++) {
+        out->data[i] = exp(this->data[i] - maxx);
+        classes_exp_sum += out->data[i];
+    }
+    for (int i = 0; i < out->size; i++) {
+        out->data[i] /= classes_exp_sum;
+    }
+
+    out->children.push_back(shared_from_this());
+
+    auto self = shared_from_this();
+    out->backward_op = [self, out]() {
+        for (int i = 0; i < out->size; i++) {
+            for (int j = 0; j < out->size; j++) {
+                if (i == j) {
+                    self->grad[i] += out->grad[j] * out->data[i] * (1.0 - out->data[i]);
+                } else {
+                    self->grad[i] -= out->grad[j] * out->data[i] * out->data[j];
+                }
+            }
+        }
+    };
+
+    return out;
+}
+
+std::shared_ptr<Tensor> Tensor::log() {
+    auto out = std::make_shared<Tensor>(this->shape, this->device);
+
+    for (int i = 0; i < this->size; i++) {
+        // Add a small epsilon to avoid log(0)
+        out->data[i] = std::log(this->data[i] + 1e-15);
+    }
+
+    out->children.push_back(shared_from_this());
+
+    auto self = shared_from_this();
+    out->backward_op = [self, out]() {
+        for (int i = 0; i < self->size; i++) {
+            self->grad[i] += out->grad[i] / (self->data[i] + 1e-15);
         }
     };
 

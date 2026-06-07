@@ -32,7 +32,8 @@ int main() {
         // MaxPool: 2x2, stride=2 -> 8 x 7 x 7
         // Flatten: 8 * 7 * 7 = 392
         // Output: 10
-        SimpleModel model(0.01, 10); 
+        // SimpleModel model(0.01, 10); 
+        SimpleModel model(0.005, 5); 
         model.conv2d(1, 8, 3, 2, 1);
         model.relu();
         model.maxpool2d(2, 2, 0);
@@ -45,8 +46,8 @@ int main() {
         // For now, let's train on a meaningful subset to see if it learns.
         
         std::cout << "Starting MNIST Training..." << std::endl;
-        int epochs = 10; 
-        int num_samples = 100; // Subset for testing
+        int epochs = 5; 
+        int num_samples = 2000; // Increased sample size
         model.fit(train_images,train_labels,epochs,num_samples);
     
         std::cout << "Testing Model" << std::endl;

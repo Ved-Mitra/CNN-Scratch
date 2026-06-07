@@ -16,10 +16,13 @@ public:
     void maxpool2d(int pool_size,int stride=1,int padding=0);
     //train
     double train (std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> target);
+    void fit(std::vector<std::shared_ptr<Tensor>> input,std::vector<std::shared_ptr<Tensor>> target, int epoch=10, int num_samples=100);
+    std::vector<std::shared_ptr<Tensor>> test(std::vector<std::shared_ptr<Tensor>> input);
+    double accuracy_score(std::vector<std::shared_ptr<Tensor>> pred,std::vector<std::shared_ptr<Tensor>> labels);
 
 private:
     int epoch;
-    double learning_rate; // Changed to double
-    std::vector<std::shared_ptr<Layer>> layers; // Changed back to Layer base class
+    double learning_rate;
+    std::vector<std::shared_ptr<Layer>> layers;
     std::shared_ptr<Tensor> forward (std::shared_ptr<Tensor> input);
 };

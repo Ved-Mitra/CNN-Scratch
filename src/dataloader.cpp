@@ -31,8 +31,9 @@ std::vector<std::shared_ptr<Tensor>> DataLoader::load_mnist_images(std::string p
     std::vector<std::shared_ptr<Tensor>> images;
     int pixel_count = rows * cols;
     
-    // We'll just load the first 1000 for a demonstration
-    for (int i = 0; i < 1000; i++) {
+    // Load up to 10000 samples if available (standard MNIST has 60k)
+    int samples_to_load = std::min(num_images, 10000);
+    for (int i = 0; i < samples_to_load; i++) {
         auto t = std::make_shared<Tensor>(std::vector<int>{1, rows, cols});
         for (int p = 0; p < pixel_count; p++) {
             unsigned char temp = 0;
@@ -56,11 +57,12 @@ std::vector<std::shared_ptr<Tensor>> DataLoader::load_mnist_labels(std::string p
     num_items = reverse_int(num_items);
 
     std::vector<std::shared_ptr<Tensor>> labels;
-    for (int i = 0; i < 1000; i++) {
+    int samples_to_load = std::min(num_items, 10000);
+    for (int i = 0; i < samples_to_load; i++) {
         unsigned char temp = 0;
         file.read((char*)&temp, 1);
         
-        // Convert to One-Hot encoding for MSE (10 classes)
+        // Convert to One-Hot encoding (10 classes)
         auto t = std::make_shared<Tensor>(std::vector<int>{1, 10});
         for(int c=0; c<10; c++) t->data[c] = (c == (int)temp) ? 1.0 : 0.0;
         

@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <cmath>
 
 // Track where the tensor lives
 enum class Device { CPU, CUDA };
@@ -46,6 +47,12 @@ public:
   // Spatial Utilities
   int get_index(const std::vector<int>& coords) const;
   std::shared_ptr<Tensor> flatten();
+
+  // Utilities
+  std::shared_ptr<Tensor> softmax();
+
+  //Mathemaical function
+  std::shared_ptr<Tensor> log();
 
 private:
   void dfs(std::set<std::shared_ptr<Tensor>> &visited, std::vector<std::shared_ptr<Tensor>> &topo,std::shared_ptr<Tensor> &node);

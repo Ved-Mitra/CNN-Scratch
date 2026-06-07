@@ -48,7 +48,7 @@ double SimpleModel::train(std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> 
     std::shared_ptr<Tensor> pred = forward(input);
     
     //loss
-    std::shared_ptr<Tensor> loss = loss_func.MSE(pred, target);
+    std::shared_ptr<Tensor> loss = loss_func.CrossEntropy(pred, target);
     
     optimizer.zero_grad();
     loss->backward();
@@ -59,12 +59,12 @@ double SimpleModel::train(std::shared_ptr<Tensor> input,std::shared_ptr<Tensor> 
     return loss->data[0];
 }
 
-void SimpleModel::fit(std::vector<std::shared_ptr<Tensor>> input,std::vector<std::shared_ptr<Tensor>> target, int epoch=10, int num_samples=100){
+void SimpleModel::fit(std::vector<std::shared_ptr<Tensor>> input,std::vector<std::shared_ptr<Tensor>> target, int epoch, int num_samples){
     if(input.size()<num_samples){
         num_samples=input.size();
     }
 
-    for(int e=1;e<epoch;e++){
+    for(int e=0;e<epoch;e++){
         double total_epoch_loss=0.0;
         for(int i=0;i<num_samples;i++){
             total_epoch_loss+=train(input[i],target[i]);
@@ -81,13 +81,26 @@ std::vector<std::shared_ptr<Tensor>> SimpleModel::test(std::vector<std::shared_p
     return out;
 }
 
-double SimpleModel::accuracy_score(std::vector<std::shared_ptr<Tensor>> pred,std::vector<std::shared_ptr<Tensor>> labels){
-    double accuracy=0.0;
-    for(int i=0;i<pred.size();i++){
-        
+double SimpleModel::accuracy_score(std::vector<std::shared_ptr<Tensor>> pred, std::vector<std::shared_ptr<Tensor>> labels) {
+    if (pred.size() != labels.size() || pred.empty()) return 0.0;
+    
+    double correct = 0.0;
+    for (size_t i = 0; i < pred.size(); i++) {
+        int pred_max_idx = 0;
+        int label_max_idx = 0;
+        for (int j = 0; j < pred[i]->size; j++) {
+            if (pred[i]->data[j] > pred[i]->data[pred_max_idx]) {
+                pred_max_idx = j;
+            }
+            if (labels[i]->data[j] > labels[i]->data[label_max_idx]) {
+                label_max_idx = j;
+            }
+        }
+        if (pred_max_idx == label_max_idx) {
+            correct++;
+        }
     }
-    accuracy/=pred.size();
-    return accuracy;
+    return correct / pred.size();
 }
 
 std::vector<std::shared_ptr<Tensor>>  SimpleModel::get_parameters() {

@@ -10,7 +10,8 @@ void LinearLayer::initialize(int in_features, int out_features) {
     auto weights = std::make_shared<Tensor>(std::vector<int>{in_features, out_features});
     
     // Xavier/Glorot Initialization
-    std::default_random_engine generator;
+    std::random_device rd;
+    std::default_random_engine generator(rd());
     double limit = std::sqrt(6.0 / (in_features + out_features));
     std::uniform_real_distribution<double> distribution(-limit, limit);
     
@@ -50,9 +51,10 @@ void Conv2DLayer::initialize(int in_channels, int out_channels,int kernel_size,i
 
     auto weights=std::make_shared<Tensor> (std::vector<int>{out_channels,in_channels,kernel_size,kernel_size});
 
-    //He Initializtion
-    std::default_random_engine generator;
-    double limit = std::sqrt(2.0 / (in_channels*kernel_size*kernel_size));
+    // He Initialization (Uniform)
+    std::random_device rd;
+    std::default_random_engine generator(rd());
+    double limit = std::sqrt(6.0 / (in_channels * kernel_size * kernel_size));
     std::uniform_real_distribution<double> distribution(-limit, limit);
     
     for (int i = 0; i < weights->size; i++) {
