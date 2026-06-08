@@ -32,3 +32,23 @@ cd build
 cmake ..
 make
 ```
+## Results
+
+On MNIST Dataset:
+
+training set - 50K images
+
+test set - 10K images
+```
+--- Training on MNIST Dataset ---
+Loaded 10000 samples for training.
+Loaded10000 samples for testing.
+Starting MNIST Training...
+Epoch 1 - Average Loss: 1.2011
+Epoch 2 - Average Loss: 0.623326
+Epoch 3 - Average Loss: 0.502686
+Epoch 4 - Average Loss: 0.441675
+Epoch 5 - Average Loss: 0.40235
+Testing Model
+Accuracy : 0.877
+```
