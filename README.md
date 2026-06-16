@@ -81,6 +81,8 @@ Final Accuracy: 77%
 training set - 112K images
 
 test set - 18K images
+
+classes - 47
 ```
 --- Testing on EMNIST Dataset ---
 Loaded 2000 samples for training.
@@ -105,6 +107,8 @@ Final Accuracy: 61%
 training set - 50K images
 
 test set - 10K images
+
+classes - 10
 ```
 --- Testing on CIFAR-10 Dataset ---
 Loaded 2000 samples for training.
