@@ -1,63 +1,92 @@
 #include <iostream>
 #include "model.h"
 #include "dataloader.h"
-
 int main() {
     try {
-        std::cout << "--- Training on MNIST Dataset ---" << std::endl;
+        std::cout << "--- CNN Scratch Testing Environment ---" << std::endl;
 
-        // 1. Load Data
-        std::string train_images_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/MNIST/train-images.idx3-ubyte";
-        std::string train_labels_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/MNIST/train-labels.idx1-ubyte";
+        std::vector<std::shared_ptr<Tensor>> train_images, train_labels, test_images, test_labels;
+        int num_classes, img_rows, img_cols, img_channels;
+        int train_samples = 2000;
+        int test_samples = 500;
+        int epochs = 10;
+        double learning_rate = 0.005;
 
-        //test data
-        std::string test_images_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/MNIST/t10k-images.idx3-ubyte";
-        std::string test_labels_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/MNIST/t10k-labels.idx1-ubyte";
+        // --- 1. MNIST ---
+        /*
+        std::cout << "Dataset: MNIST" << std::endl;
+        num_classes = 10; img_rows = 28; img_cols = 28; img_channels = 1;
+        std::string base_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/MNIST/";
+        train_images = DataLoader::load_idx_images(base_path + "train-images.idx3-ubyte", train_samples);
+        train_labels = DataLoader::load_idx_labels(base_path + "train-labels.idx1-ubyte", num_classes, train_samples);
+        test_images = DataLoader::load_idx_images(base_path + "t10k-images.idx3-ubyte", test_samples);
+        test_labels = DataLoader::load_idx_labels(base_path + "t10k-labels.idx1-ubyte", num_classes, test_samples);
+        */
 
-        auto train_images = DataLoader::load_mnist_images(train_images_path);
-        auto train_labels = DataLoader::load_mnist_labels(train_labels_path);
+        // --- 2. Fashion-MNIST ---
+        /*
+        std::cout << "Dataset: Fashion-MNIST" << std::endl;
+        num_classes = 10; img_rows = 28; img_cols = 28; img_channels = 1;
+        std::string base_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/FashionMNIST/";
+        train_images = DataLoader::load_idx_images(base_path + "train-images-idx3-ubyte", train_samples);
+        train_labels = DataLoader::load_idx_labels(base_path + "train-labels-idx1-ubyte", num_classes, train_samples);
+        test_images = DataLoader::load_idx_images(base_path + "t10k-images-idx3-ubyte", test_samples);
+        test_labels = DataLoader::load_idx_labels(base_path + "t10k-labels-idx1-ubyte", num_classes, test_samples);
+        */
 
-        auto test_images = DataLoader::load_mnist_images(test_images_path);
-        auto test_labels=DataLoader::load_mnist_labels(test_labels_path);
+        // --- 3. EMNIST (Balanced) ---
+        /*
+        std::cout << "Dataset: EMNIST (Balanced)" << std::endl;
+        num_classes = 47; img_rows = 28; img_cols = 28; img_channels = 1;
+        std::string base_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/EMINST/";
+        train_images = DataLoader::load_idx_images(base_path + "emnist-balanced-train-images-idx3-ubyte", train_samples);
+        train_labels = DataLoader::load_idx_labels(base_path + "emnist-balanced-train-labels-idx1-ubyte", num_classes, train_samples);
+        test_images = DataLoader::load_idx_images(base_path + "emnist-balanced-test-images-idx3-ubyte", test_samples);
+        test_labels = DataLoader::load_idx_labels(base_path + "emnist-balanced-test-labels-idx1-ubyte", num_classes, test_samples);
+        */
+
+        // --- 4. CIFAR-10 ---
+        std::cout << "Dataset: CIFAR-10" << std::endl;
+        num_classes = 10; img_rows = 32; img_cols = 32; img_channels = 3;
+        std::string base_path = "/home/ved/Desktop/PROJECTS/CNN Scratch/dataset/CIFAR_10/";
+        DataLoader::load_cifar_binary(base_path + "data_batch_1.bin", train_images, train_labels, train_samples);
+        DataLoader::load_cifar_binary(base_path + "test_batch.bin", test_images, test_labels, test_samples);
+
+        // ==========================================
+
+        if (train_images.empty()) {
+            throw std::runtime_error("No dataset selected or loaded. Please uncomment a dataset block in main.cpp");
+        }
 
         std::cout << "Loaded " << train_images.size() << " samples for training." << std::endl;
-        std::cout << "Loaded" << test_images.size() << " samples for testing." << std::endl;
+        std::cout << "Loaded " << test_images.size() << " samples for testing." << std::endl;
 
-        // 2. Define Model Architecture for MNIST
-        // Input: 784 (28x28 flattened)
-        // 2. Define CNN Architecture for MNIST
-        // Input: 1x28x28
-        // Conv1: 1 -> 8 filters (3x3), stride=2, padding=1
-        // Output after Conv1: 8 x 14 x 14
-        // MaxPool: 2x2, stride=2 -> 8 x 7 x 7
-        // Flatten: 8 * 7 * 7 = 392
-        // Output: 10
-        // SimpleModel model(0.01, 10); 
-        SimpleModel model(0.005, 5); 
-        model.conv2d(1, 8, 3, 2, 1);
-        model.relu();
-        model.maxpool2d(2, 2, 0);
-        model.flatten();
-        model.linearlayer(392, 10);
-
-        // 3. Training
-        // Since our current model.train() takes total Tensors, we need to handle 
-        // the batch or perform a simple loop here if your train() isn't vectorized.
-        // For now, let's train on a meaningful subset to see if it learns.
+        // --- Model Architecture ---
+        SimpleModel model(learning_rate, epochs);
         
-        std::cout << "Starting MNIST Training..." << std::endl;
-        int epochs = 5; 
-        int num_samples = 2000; // Increased sample size
-        model.fit(train_images,train_labels,epochs,num_samples);
+        // Dynamic Conv layer based on img_channels
+        model.conv2d(img_channels, 8, 3, 2, 1); // Input -> 8 filters (3x3), stride=2, padding=1
+        model.relu();
+        model.maxpool2d(2, 2, 0); // 14x14 -> 7x7
+        model.flatten();
+        
+        // Calculate flattened size: (img_rows/4) * (img_cols/4) * 8 filters
+        // For 28x28: 7 * 7 * 8 = 392
+        int flattened_size = (img_rows / 4) * (img_cols / 4) * 8;
+        model.linearlayer(flattened_size, num_classes);
+
+        // --- Training ---
+        std::cout << "Starting Training..." << std::endl;
+        model.fit(train_images, train_labels, epochs, train_samples);
     
-        std::cout << "Testing Model" << std::endl;
-        auto pred=model.test(test_images);
-        double accuracy=model.accuracy_score(pred,test_labels);
-        std::cout << "Accuracy : " << accuracy << std::endl;
+        // --- Evaluation ---
+        std::cout << "Testing Model..." << std::endl;
+        auto pred = model.test(test_images);
+        double accuracy = model.accuracy_score(pred, test_labels);
+        std::cout << "Final Accuracy: " << (accuracy * 100.0) << "%" << std::endl;
 
     } catch (const std::exception& e) {
         std::cerr << "\nError: " << e.what() << std::endl;
-        std::cerr << "Ensure dataset paths are correct relative to the execution directory." << std::endl;
     }
 
     return 0;
